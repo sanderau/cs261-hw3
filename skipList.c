@@ -12,9 +12,18 @@ Main Function
  pre:	no parameres
  post: prints out the contents of the skip list */
 
-void test(){
+int main()
+{
+	test();
+
+	
+	return 0;
+}
+
+void test()
+{
 	int i,j;
-	int M;
+	int M = 20;
 	struct skipList *slst;
 	test();
 	
@@ -31,6 +40,11 @@ void test(){
         /*  FIX ME */
 
 	/*  Add to the skip list  M = 20 random integers in [0,100] */
+	
+	for(i = 0; i < M; i++)
+	{
+		addSkipList(slst, rand()%20+1); 
+	}
 	
         /*  FIX ME */
 	
@@ -124,10 +138,28 @@ struct skipLink* newSkipLink(TYPE e, struct skipLink * nextLnk, struct skipLink*
  param: e	 -- the value to create a link for
  pre:	current is not NULL
  post: a link to store the value */
-struct skipLink* skipLinkAdd(struct skipLink * current, TYPE e) {
+struct skipLink* skipLinkAdd(struct skipLink * current, TYPE e) 
+{
+	struct skipLink *new, *down;
+	new = 0;
+	assert(current);
+	if(current->down == 0)
+	{
+		new = newSkipLink(e, current->next, 0);
+		current->next = new;
+	}
 
-/* FIX ME */
+	else
+	{
+		down = skipLinkAdd(slideRightSkipList(current->down, e), e);
+		if(down && flipSkipLink())
+		{
+			new = newSkipLink(e, current->next, down);
+			current->next = new;
+		}
+	}
 
+	return new;
 }
 
 
@@ -199,9 +231,16 @@ void removeSkipList(struct skipList *slst, TYPE e)
 	post:	the new element is added to the lowest list and randomly to higher-level lists */
 void addSkipList(struct skipList *slst, TYPE e)
 {
+	struct skipLink *downLink, *newLink;
+	downLink = skipLinkAdd(slideRightSkipList(slst->topSentinel, e), e);
 
-/* FIX ME */
+	if(downLink && flipSkipLink())
+	{
+		newLink = newSkipLink(e, 0, downLink);
+		slst->topSentinel = newSkipLink(0, newLink, slst->topSentinel);
+	}
 
+	slst->size++;
 }
 
 /* Find the number of elements in the skip list:

@@ -1,7 +1,7 @@
 default: skipList
 
 skipList: skipList.c skipList.h 
-	gcc -Wall -ansi -c skipList.c	
+	gcc -Wall -ansi skipList.c skipList.h -o run	
 		
 clean:
-	rm *.o
+	rm *.o run
