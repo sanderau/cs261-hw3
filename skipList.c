@@ -14,9 +14,37 @@ Main Function
 
 int main()
 {
+	printf("*****************************************************TEST*******************************************************\n");
 	test();
+	printf("*****************************************************MERGE****************************************************\n\n");
 
+	int i;
+	struct skipList *one, *two;
+	one = (struct skipList *) malloc(sizeof(struct skipList));
+	two =  (struct skipList *) malloc(sizeof(struct skipList));	
+
+	initSkipList(one);
+	initSkipList(two);
+
+	for(i = 0; i < 20; i++)
+	{
+		addSkipList(one, rand()%100+1);
+		addSkipList(two, rand()%100+1);
+	}
+
+	printf("Skip list one: \n\n");
+	printSkipList(one);
 	
+	printf("\n\nSkip list two: \n\n");
+	printSkipList(two);
+
+	mergeSkipList(one, two);
+
+	printf("\n\nmerged skip list: \n\n");
+	printSkipList(one);
+
+	free(one);
+
 	return 0;
 }
 
@@ -25,27 +53,25 @@ void test()
 	int i,j;
 	int M = 20;
 	struct skipList *slst;
-	test();
 	
-	 srand ( time(NULL) );
+	srand ( time(NULL) );
 	
-
 	slst=(struct skipList *)malloc(sizeof(struct skipList));  /*2*/
 	assert(slst);
-
-	
 	
 	/*  Initialize the skip list */
+
+	initSkipList(slst);
 	
         /*  FIX ME */
 
 	/*  Add to the skip list  M = 20 random integers in [0,100] */
-	
+
 	for(i = 0; i < M; i++)
 	{
-		addSkipList(slst, rand()%20+1); 
+		addSkipList(slst, rand()%100+1);
 	}
-	
+
         /*  FIX ME */
 	
 	/*  Print out the contents of the skip list in the breadth-first order, 
@@ -60,7 +86,8 @@ void test()
 	    7 14 29
 	    3 7 9 14 20
 	 */
-
+	printf("Contents of original skip list:\n\n");	
+	printSkipList(slst);
 
         /*  FIX ME */
 
@@ -71,11 +98,40 @@ void test()
 	         int removeSkipList(struct skipList *slst, TYPE e)
 	 */
 
+	int removed[3];
 
+	for(j = 1; j <= 3; j++)
+	{
+		printf("\n");
+		int random;
+		printf("Removal #%d\n", j);
+		while(!(containsSkipList(slst, random)))
+		{		
+			random = rand()%100+1;
+		}
+
+		printf("removing: %d\n\n", random);
+	
+		removeSkipList(slst, random);
+
+		printSkipList(slst);
+		removed[j-1] = random;
+	}
 
         /*  FIX ME */
+	
+	printf("\n");
 
+	for(j = 0; j < 3; j++)
+	{
+		printf("contains %d: ", removed[j]);
 
+		if(!(containsSkipList(slst, removed[j]))) 
+			printf("false\n");
+
+		else	
+			printf("true\n");
+	}
 
 
 
@@ -88,7 +144,7 @@ void test()
 
         /*  FIX ME */
 	        
-
+	free(slst);
 }
 
 
@@ -138,28 +194,30 @@ struct skipLink* newSkipLink(TYPE e, struct skipLink * nextLnk, struct skipLink*
  param: e	 -- the value to create a link for
  pre:	current is not NULL
  post: a link to store the value */
-struct skipLink* skipLinkAdd(struct skipLink * current, TYPE e) 
+struct skipLink* skipLinkAdd(struct skipLink * lnk, TYPE e) 
 {
 	struct skipLink *new, *down;
 	new = 0;
-	assert(current);
-	if(current->down == 0)
+	assert(lnk);
+	
+	if(lnk->down == 0)
 	{
-		new = newSkipLink(e, current->next, 0);
-		current->next = new;
+		new = newSkipLink(e, lnk->next, 0);
+		lnk->next = new;
 	}
 
 	else
 	{
-		down = skipLinkAdd(slideRightSkipList(current->down, e), e);
+		down = skipLinkAdd(slideRightSkipList(lnk->down, e), e);
 		if(down && flipSkipLink())
 		{
-			new = newSkipLink(e, current->next, down);
-			current->next = new;
+			new = newSkipLink(e, lnk->next, down);
+			lnk->next = new;
 		}
 	}
 
 	return new;
+
 }
 
 
@@ -261,8 +319,24 @@ int sizeSkipList(struct skipList *slst){
 void printSkipList(struct skipList *slst)
 {
 
-	/* FIX ME*/
+	struct skipLink *current, *root;
+	int val;
 
+	current = slst->topSentinel;
+	root = current;
+	while(root != 0)
+	{
+		current = current->next;
+		while(current != 0)
+		{
+			val = current->value;
+			printf("%d ", val);
+			current = current->next;
+		}
+		root = root->down;
+		current = root;
+		printf("\n");
+	}
 }
 
 
@@ -275,8 +349,31 @@ void printSkipList(struct skipList *slst)
  post: slst1 points to the merger skip list,  slst2 is null*/
 void mergeSkipList(struct skipList *slst1, struct skipList *slst2)
 {
+	struct skipLink *root;
+	root = slst2->topSentinel;
+	assert(slst1);
+	assert(slst2);
 
-	/* FIX ME*/
+	while(root->down != 0)
+	{
+		root = root->down;
+	}
+
+	root = root->next;
+
+	while(root != 0)
+	{
+		if(!(containsSkipList(slst1, root->value)))
+		{
+			addSkipList(slst1, root->value);
+		}
+
+		root = root->next;
+	}
+
+	free(slst2);
+	slst2 = 0;
+
 		
 } /* end of the function */
 	
